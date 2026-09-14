@@ -68,14 +68,9 @@ class TodayStudyNotifier extends AsyncNotifier<List<StudySession>> {
         await revisionRepo.addRevisions(revisions);
       }
 
-      // 3. Update Planned Task status if provided
-      if (plannedTask != null) {
-        final updatedTask = plannedTask.copyWith(
-          status: 'completed',
-        );
-        await plannerRepo.updateTask(updatedTask);
-      }
-
+      // 3. We no longer update the PlannedTask status to 'completed' here.
+      // This allows the task to remain active for the next infinite cycle.
+      
       return repository.getSessionsForDate(today);
     });
   }

@@ -114,8 +114,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   Widget _buildProgressSection(List<PlannedTask> tasks, List<dynamic> completedSessions) {
     if (tasks.isEmpty) return const SizedBox.shrink();
 
-    final completedTasksCount = tasks.where((t) => t.isCompleted).length;
-    final progress = completedTasksCount / tasks.length;
+    final completedTasksCount = tasks.where((t) => completedSessions.any((s) => s.plannedTaskId == t.id)).length;
+    final progress = tasks.isEmpty ? 0.0 : completedTasksCount / tasks.length;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -147,7 +147,8 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   }
 
   Widget _buildTaskCard(PlannedTask task, List<Subject> subjects, List<dynamic> completedSessions) {
-    if (task.isCompleted) return const SizedBox.shrink(); // Don't show in planned if completed
+    bool isCompletedToday = completedSessions.any((s) => s.plannedTaskId == task.id);
+    if (isCompletedToday) return const SizedBox.shrink(); // Don't show in planned if completed today
     
     final subject = subjects.firstWhere(
       (s) => s.id == task.subjectId, 
