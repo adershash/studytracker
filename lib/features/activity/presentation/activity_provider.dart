@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../study/data/study_repository.dart';
 import '../../study/domain/study_session.dart';
+import '../../revisions/data/revision_repository.dart';
 
 class ActivityData {
   final Map<DateTime, int> activityMap;
@@ -28,6 +29,13 @@ final activityProvider = FutureProvider<ActivityData>((ref) async {
 
   final activityMap = await studyRepo.getActivityMap(yearAgo, today);
   final allSessions = await studyRepo.getAllSessions();
+  
+  final revisionRepo = ref.watch(revisionRepositoryProvider);
+  final revActivityMap = await revisionRepo.getCompletedRevisionsActivityMap(yearAgo, today);
+
+  for (final entry in revActivityMap.entries) {
+    activityMap[entry.key] = (activityMap[entry.key] ?? 0) + entry.value;
+  }
 
   // Calculate streaks - allow streak to start from yesterday if today not yet studied
   int currentStreak = 0;

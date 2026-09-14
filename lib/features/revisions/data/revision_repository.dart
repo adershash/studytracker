@@ -70,4 +70,31 @@ class RevisionRepository {
       'pending': pending.first['count'] as int,
     };
   }
+
+  /// Get a map of date -> completed revision count for the heatmap
+  Future<Map<DateTime, int>> getCompletedRevisionsActivityMap(DateTime start, DateTime end) async {
+    final db = await _dbService.database;
+    final startStr = DateTime(start.year, start.month, start.day).toIso8601String();
+    final endStr = DateTime(end.year, end.month, end.day, 23, 59, 59).toIso8601String();
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'revisions',
+      where: 'completedDate >= ? AND completedDate <= ? AND status = ?',
+      whereArgs: [startStr, endStr, 'completed'],
+    );
+    
+    final Map<DateTime, int> activityMap = {};
+    for (var map in maps) {
+      final rev = Revision.fromMap(map);
+      if (rev.completedDate != null) {
+        final dateKey = DateTime(
+          rev.completedDate!.year,
+          rev.completedDate!.month,
+          rev.completedDate!.day,
+        );
+        activityMap[dateKey] = (activityMap[dateKey] ?? 0) + 1;
+      }
+    }
+    return activityMap;
+  }
 }
